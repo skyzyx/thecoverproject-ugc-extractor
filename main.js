@@ -37,11 +37,11 @@ $(function(){
       return
     }
 
-    if(!url.match(/^https?:\/\/www\.thecoverproject\.net\/download_cover\.php/i)){
-      alert('Invalid URL.\n\nExample: http://www.thecoverproject.net/download_cover.php?file=n64_007-worldisnotenough.jpg')
-      return;
-    }
-    
+    // if(!url.match(/^https?:\/\/www\.thecoverproject\.net\/download_cover\.php/i)){
+    //   alert('Invalid URL.\n\nExample: http://www.thecoverproject.net/download_cover.php?file=n64_007-worldisnotenough.jpg')
+    //   return;
+    // }
+
     $mainForm.addClass("loading");
     img = new Image;
     img.crossOrigin = "Anonymous";
