@@ -1,52 +1,48 @@
 #! /usr/bin/env node
 
 const fs = require('fs');
+const process = require('process');
 const { createCanvas, loadImage } = require('canvas')
+const commander = require('commander');
 const path = '/Users/rparman/Desktop/covers';
 
-// let dir = fs.readdirSync(path, {
-//   encoding: 'utf8',
-//   withFileTypes: true,
-// })
+const program = new commander.Command();
+program
+  .version('0.0.1', '-v, --version')
+  .option('-r, --rotate', 'Rotate the UGC image (e.g., SNES) or not (e.g., Genesis)')
+  .option('-p, --path <path>', 'The file system path to watch');
 
-// for (let file of dir) {
-//   let canvas   = createCanvas(2100, 1534)
-//   let ctx      = canvas.getContext('2d')
-//   let filePath = path + '/' + file.name;
+program.parse(process.argv);
 
-//   loadImage(filePath).then(image => {
-//     ctx.save();
-//     ctx.rotate(-90 * Math.PI / 180);
-//     ctx.drawImage(image, -3366, 0, 3366, 2100);
-//     ctx.restore();
+if (program.path === undefined) {
+  console.log('Error: --path <path> is required.');
+  process.exit(1);
+}
 
-//     let outFile = filePath + '.out.jpg';
-//     let out    = fs.createWriteStream(outFile);
-//     let stream = canvas.createJPEGStream({
-//       quality: 0.95,
-//       chromaSubsampling: false,
-//     });
+console.log(`Watching the ${program.path} directory…`);
 
-//     stream.pipe(out);
-//     out.on('finish', () => console.log(`Wrote ${outFile}…`));
-//   });
-// }
-
-
-fs.watch(path, (eventType, filename) => {
-  console.log(`event type is: ${eventType}`);
+fs.watch(program.path, (eventType, filename) => {
   if ('rename' === eventType && filename && filename.indexOf('.out.') === -1) {
     console.log(`Reformatting ${filename}…`);
 
-    let canvas   = createCanvas(2100, 1534)
+    let canvas = createCanvas(1534, 2100);
+
+    if (program.rotate) {
+      let canvas = createCanvas(2100, 1534);
+    }
+
     let ctx      = canvas.getContext('2d')
     let filePath = path + '/' + filename;
 
     loadImage(filePath).then(image => {
-      ctx.save();
-      ctx.rotate(-90 * Math.PI / 180);
-      ctx.drawImage(image, -3366, 0, 3366, 2100);
-      ctx.restore();
+      if (program.rotate) {
+        ctx.save();
+        ctx.rotate(-90 * Math.PI / 180);
+        ctx.drawImage(image, -3366, 0, 3366, 2100);
+        ctx.restore();
+      } else {
+        ctx.drawImage(image, -1832, 0, 3366, 2100);
+      }
 
       let outFile = filePath + '.out.jpg';
       let out    = fs.createWriteStream(outFile);
@@ -56,9 +52,8 @@ fs.watch(path, (eventType, filename) => {
       });
 
       stream.pipe(out);
-      out.on('finish', () => console.log(`Done.`));
+    }).catch((error) => {
+      // Nothing. Probably removed from the dir.
     });
-  } else {
-    console.log('no action performed.');
   }
 });
